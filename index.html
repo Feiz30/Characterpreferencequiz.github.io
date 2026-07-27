@@ -43,7 +43,35 @@ document.getElementById('subjective').innerHTML=subjective.map((q,i)=>card(q,i+1
 document.getElementById('scriptProblems').innerHTML=issues.map((x,i)=>`<label class="option"><input type="checkbox" name="issue" value="${i}"><span class="option-copy">${x}</span></label>`).join('')+`<label class="option no-problem"><input type="checkbox" id="none"><span class="option-copy">没有明显问题 <small>5 分</small></span></label>`;
 function selected(){document.querySelectorAll('.option').forEach(x=>x.classList.toggle('selected',x.querySelector('input').checked))}function update(){const all=[...subjective,...objective],done=all.filter(q=>document.querySelector(`input[name="${q[0]}"]:checked`)).length+(document.getElementById('none').checked||document.querySelector('input[name="issue"]:checked')?1:0);document.getElementById('progressText').textContent=`${done} / 10`;document.getElementById('progressBar').style.width=`${done*10}%`;selected();return done}
 document.addEventListener('change',e=>{if(e.target.id==='none'&&e.target.checked)document.querySelectorAll('input[name="issue"]').forEach(x=>x.checked=false);if(e.target.name==='issue'&&e.target.checked)document.getElementById('none').checked=false;update()});
-document.getElementById('showResult').onclick=()=>{const done=update(),warn=document.getElementById('warning');if(done!==10){warn.hidden=false;return}warn.hidden=true;let sub=subjective.reduce((s,q)=>{let v=+document.querySelector(`input[name="${q[0]}"]:checked`).value;return s+(q[0]==='xp'?XP[v]:A[v])*q[2]},0)/.9;let cap=[5,5,5,4.5,4,3.5][+document.querySelector('input[name="dealbreaker"]:checked').value];sub=Math.min(sub,cap);let issueN=document.querySelectorAll('input[name="issue"]:checked').length,q10=document.getElementById('none').checked?5:Math.max(0,5-issueN*.5);let obj=objective.reduce((s,q)=>s+A[+document.querySelector(`input[name="${q[0]}"]:checked`).value]*q[2],q10*.15);document.getElementById('subjectiveScore').textContent=sub.toFixed(2);document.getElementById('objectiveScore').textContent=obj.toFixed(2);let n=document.getElementById('name').value.trim();document.getElementById('resultTitle').textContent=n?`「${n}」的评分结果`:'评分结果';let r=document.getElementById('result');r.hidden=false;r.scrollIntoView({behavior:'smooth',block:'start')}};
+document.getElementById('showResult').onclick=function(){
+  var done=update();
+  var warn=document.getElementById('warning');
+  if(done!==10){warn.hidden=false;return}
+  warn.hidden=true;
+  var sub=0;
+  subjective.forEach(function(q){
+    var input=document.querySelector('input[name="'+q[0]+'"]:checked');
+    var value=Number(input.value);
+    sub+=(q[0]==='xp'?XP[value]:A[value])*q[2];
+  });
+  sub=sub/.9;
+  var dealbreaker=Number(document.querySelector('input[name="dealbreaker"]:checked').value);
+  sub=Math.min(sub,[5,5,5,4.5,4,3.5][dealbreaker]);
+  var issueN=document.querySelectorAll('input[name="issue"]:checked').length;
+  var q10=document.getElementById('none').checked?5:Math.max(0,5-issueN*.5);
+  var obj=q10*.15;
+  objective.forEach(function(q){
+    var input=document.querySelector('input[name="'+q[0]+'"]:checked');
+    obj+=A[Number(input.value)]*q[2];
+  });
+  document.getElementById('subjectiveScore').textContent=sub.toFixed(2);
+  document.getElementById('objectiveScore').textContent=obj.toFixed(2);
+  var name=document.getElementById('name').value.trim();
+  document.getElementById('resultTitle').textContent=name?'「'+name+'」的评分结果':'评分结果';
+  var result=document.getElementById('result');
+  result.hidden=false;
+  result.scrollIntoView({behavior:'smooth',block:'start'});
+};
 document.getElementById('reset').onclick=()=>{document.querySelectorAll('input').forEach(x=>{if(x.type==='text')x.value='';else x.checked=false});document.getElementById('result').hidden=true;document.getElementById('warning').hidden=true;update();window.scrollTo({top:0,behavior:'smooth'})};update();
 </script>
 </body>
