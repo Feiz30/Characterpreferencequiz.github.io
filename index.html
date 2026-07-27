@@ -17,15 +17,15 @@
   <div id="subjective"></div>
   <div class="part-heading objective-heading"><span>第二部分</span><h2>客观评分</h2><p>请尽量抛开自己的 XP，只评价角色和个人线本身。</p></div>
   <div id="objective"></div>
-  <section class="question"><header><h2>Q10．游玩过程中，这条个人线是否存在明显影响体验的剧本问题？</h2><em>权重 15%</em></header><p class="hint">本题可多选。每勾选 1 项问题扣 0.5 分，最低 0 分。</p><div class="options" id="scriptProblems"></div></section>
+  <section class="question"><header><h2>Q10．游玩过程中，这条个人线是否存在明显影响体验的剧本问题？</h2></header><p class="hint">本题可多选。每勾选 1 项问题扣 0.5 分，最低 0 分。</p><div class="options" id="scriptProblems"></div></section>
   <p class="warning" id="warning" hidden>还有题目未选择，请补完后再查看结果。</p>
   <div class="actions"><button id="showResult">查看结果</button><button class="reset" id="reset" type="button">重新填写</button></div>
   <section id="result" class="result" hidden><p id="resultTitle">评分结果</p><div class="result-grid"><article class="subjective-result"><span>人设喜爱度（主观）</span><div class="score"><span id="subjectiveScore"></span> <small>/ 5</small></div><p>这个角色我有多喜欢</p></article><article class="objective-result"><span>人物塑造质量（客观）</span><div class="score"><span id="objectiveScore"></span> <small>/ 5</small></div><p>这个角色和个人线写得有多好</p></article></div><small class="result-note">两项评分独立展示，不进行加权合并。</small></section>
 </main>
 <script>
-const A=[5,4,3,2,1,0], XP=[5,5,4,2,1,0], L=['A','B','C','D','E','F'];
+const A=[5,4,3,2,1,0], XP=[5,5,4,2,1,0], Q1=[6,5,4.5,4,3,1], L=['A','B','C','D','E','F'];
 const subjective=[
-['replay','你愿意重新体验他的个人线吗？',.25,['会为了他单独重新打开游戏，并优先完整重跑他的线','明确愿意完整重跑，但不一定优先','愿意重看主要章节和互动，普通内容可能跳过','重玩整部游戏时可以顺便再跑，但不会主动选择','只愿意重看少数喜欢的片段','完全不想重新体验']],
+['replay','打完这条个人线后，你是否愿意继续回顾这个角色？',.25,['主动多次重刷整条个人线，反复体验。（超额奖励）','主动截图、录屏、收藏CG/语音，或经常回顾相关内容。','偶尔会回顾喜欢的片段或内容。','打完就结束，不会特意回顾，但整体体验很好。（基准）','打的时候已经兴趣下降，但仍坚持完成。','没打完、直接弃线，或大量跳过剧情。'],'包括：截图、录屏、收藏CG、收藏台词、重听语音、刷切片、看二创、重新体验个人线等。']
 ['interaction','看他说话、做反应或与女主相处时，你有多开心？',.2,['他一出现就让我开心，很想继续看他','经常觉得可爱、帅、萌、心动，相处体验很好','有不少让我喜欢的时刻','偶尔有亮点，但整体普通','很少让我开心，甚至觉得无聊','他的出现反而降低我的游玩兴致']],
 ['xp','实际玩下来，这个角色最终属于哪一种情况？',.15,['本来就完全符合我的 XP，实际表现也没有让我失望，甚至更加喜欢','原本不是我的类型，但实际表现让我非常喜欢','有明显符合我 XP 的地方，或实际表现让我产生了明显好感','有部分吸引我的地方（如长相、CV、人设等），但整体差强人意','有踩雷点，或原本符合 XP 但实际表现让我越来越失望','完全不是我的 XP，实际表现也没有打动我，甚至让我反感']],
 ['aftertaste','打完以后，他在你心里的后劲有多强？',.15,['经常主动想起他，过很久仍有明显情绪和印象','会主动回忆他的台词、互动或剧情','偶尔会想到','别人提起时会想到','很快淡忘','完全没有后劲']],
@@ -38,7 +38,7 @@ const objective=[
 ['romance','感情发展是否自然且有说服力？',.2,['感情发展循序渐进，非常自然且有说服力','整体自然，仅有少量不足','有合理之处，也有生硬之处','感情推进偏快或铺垫不足','很多地方缺乏说服力','几乎没有感情铺垫，恋爱发展十分突兀'],['恋爱推进','感情基础','人物关系变化','是否存在强行恋爱']]
 ];
 const issues=['OOC（人物前后表现不一致）','为推动剧情而强行降智','感情推进突兀','节奏明显拖沓','人物成长缺乏铺垫','重要设定没有解释','剧情存在明显逻辑漏洞','关键冲突解决方式过于机械（依赖巧合、设定或强行反转）','烂尾或收尾仓促'];
-function card(q,n){const [id,title,w,opts,extra]=q;return `<section class="question"><header><h2>Q${n}．${title}</h2><em>权重 ${w*100}%</em></header>${extra?(Array.isArray(extra)?`<p class="criteria"><b>评价：</b>${extra.join(' · ')}</p>`:`<p class="hint">${extra}</p>`):''}<div class="options">${opts.map((o,i)=>`<label class="option"><input type="radio" name="${id}" value="${i}"><span class="option-copy"><strong>${L[i]}</strong>${o}<small>${id==='xp'?XP[i]:A[i]} 分</small></span></label>`).join('')}</div></section>`}
+function card(q,n){const [id,title,w,opts,extra]=q;return `<section class="question"><header><h2>Q${n}．${title}</h2></header>${extra?(Array.isArray(extra)?`<p class="criteria"><b>评价：</b>${extra.join(' · ')}</p>`:`<p class="hint">${extra}</p>`):''}<div class="options">${opts.map((o,i)=>`<label class="option"><input type="radio" name="${id}" value="${i}"><span class="option-copy"><strong>${L[i]}</strong>${o}<small>${id==='replay'?Q1[i]:id==='xp'?XP[i]:A[i]} 分</small></span></label>`).join('')}</div></section>`}
 document.getElementById('subjective').innerHTML=subjective.map((q,i)=>card(q,i+1)).join('');document.getElementById('objective').innerHTML=objective.map((q,i)=>card(q,i+7)).join('');
 document.getElementById('scriptProblems').innerHTML=issues.map((x,i)=>`<label class="option"><input type="checkbox" name="issue" value="${i}"><span class="option-copy">${x}</span></label>`).join('')+`<label class="option no-problem"><input type="checkbox" id="none"><span class="option-copy">没有明显问题 <small>5 分</small></span></label>`;
 function selected(){document.querySelectorAll('.option').forEach(x=>x.classList.toggle('selected',x.querySelector('input').checked))}function update(){const all=[...subjective,...objective],done=all.filter(q=>document.querySelector(`input[name="${q[0]}"]:checked`)).length+(document.getElementById('none').checked||document.querySelector('input[name="issue"]:checked')?1:0);document.getElementById('progressText').textContent=`${done} / 10`;document.getElementById('progressBar').style.width=`${done*10}%`;selected();return done}
@@ -52,7 +52,7 @@ document.getElementById('showResult').onclick=function(){
   subjective.forEach(function(q){
     var input=document.querySelector('input[name="'+q[0]+'"]:checked');
     var value=Number(input.value);
-    sub+=(q[0]==='xp'?XP[value]:A[value])*q[2];
+    sub+=(q[0]==='replay'?Q1[value]:q[0]==='xp'?XP[value]:A[value])*q[2];
   });
   sub=sub/.9;
   var dealbreaker=Number(document.querySelector('input[name="dealbreaker"]:checked').value);
